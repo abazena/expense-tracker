@@ -1,654 +1,358 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سجل المصاريف</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=Cairo+Play:wght@400;500&display=swap"
-        rel="stylesheet" />
-    <style>
-        :root {
-            --bg: #0e0f11;
-            --surface: #16181c;
-            --surface2: #1e2128;
-            --border: #2a2d35;
-            --border2: #363a45;
-            --text: #e8eaf0;
-            --muted: #6b7080;
-            --dim: #3a3d48;
-            --accent: #c8f04a;
-            --radius: 10px;
-            --radius-lg: 14px;
-            --font: 'Cairo', sans-serif;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>سجل المصاريف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=Cairo+Play:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2128;
+    --border: #2a2d35;
+    --border2: #363a45;
+    --text: #e8eaf0;
+    --muted: #6b7080;
+    --dim: #3a3d48;
+    --accent: #c8f04a;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font: 'Cairo', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; direction: rtl; }
+  body { min-height: 100vh; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  .shell { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
-        html {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 15px;
-            direction: rtl;
-        }
+  header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+  header h1 { font-size: 1.4rem; font-weight: 600; color: var(--text); }
+  header h1 span { color: var(--accent); }
+  .clock { font-size: .78rem; color: var(--muted); direction: ltr; text-align: left; }
 
-        body {
-            min-height: 100vh;
-        }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.75rem; }
+  @media (max-width: 480px) { .summary { grid-template-columns: 1fr; } }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }
+  .stat-label { font-size: .72rem; color: var(--muted); margin-bottom: .4rem; }
+  .stat-value { font-size: 1.5rem; font-weight: 600; color: var(--text); direction: ltr; text-align: right; }
+  .stat-value.accent { color: var(--accent); }
 
-        .shell {
-            max-width: 820px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem 4rem;
-        }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.4rem; margin-bottom: 1.75rem; }
+  .form-label { font-size: .78rem; color: var(--muted); margin-bottom: .9rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  input, select {
+    width: 100%; padding: 9px 11px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: var(--font); font-size: .9rem;
+    transition: border-color .15s;
+    appearance: none; text-align: right;
+  }
+  input::placeholder { color: var(--muted); }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  input[type=number] { direction: ltr; text-align: left; }
+  select option { background: var(--surface2); }
+  .add-btn {
+    width: 100%; padding: 10px;
+    background: var(--accent); color: #0e0f11;
+    border: none; border-radius: var(--radius);
+    font-family: var(--font); font-size: .95rem; font-weight: 600;
+    cursor: pointer; margin-top: 4px;
+    transition: opacity .15s, transform .1s;
+  }
+  .add-btn:hover { opacity: .88; }
+  .add-btn:active { transform: scale(.99); }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-        }
+  .list-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .85rem; flex-wrap: wrap; gap: 8px; }
+  .list-top h2 { font-size: .95rem; font-weight: 600; }
+  .list-controls { display: flex; gap: 8px; }
+  select.sm { width: auto; padding: 6px 9px; font-size: .8rem; }
+  .export-btn {
+    padding: 7px 13px; background: transparent;
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    color: var(--muted); font-size: .8rem; cursor: pointer;
+    font-family: var(--font);
+    transition: border-color .15s, color .15s;
+    white-space: nowrap;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        header h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--text);
-        }
+  .expense-list { display: flex; flex-direction: column; gap: 6px; }
+  .expense-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: .8rem 1rem;
+    transition: border-color .15s;
+  }
+  .expense-row:hover { border-color: var(--border2); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .exp-desc { flex: 1; font-size: .9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .exp-cat { font-size: .72rem; padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .exp-date { font-size: .72rem; color: var(--muted); white-space: nowrap; direction: ltr; flex-shrink: 0; }
+  .exp-amount { font-size: .95rem; font-weight: 600; white-space: nowrap; direction: ltr; flex-shrink: 0; }
+  .del { background: none; border: none; color: var(--dim); font-size: 1.1rem; cursor: pointer; line-height: 1; transition: color .15s; flex-shrink: 0; }
+  .del:hover { color: #e05252; }
 
-        header h1 span {
-            color: var(--accent);
-        }
+  .empty { text-align: center; padding: 2.5rem; color: var(--muted); font-size: .9rem; border: 1px dashed var(--border); border-radius: var(--radius-lg); }
 
-        .clock {
-            font-size: .78rem;
-            color: var(--muted);
-            direction: ltr;
-            text-align: left;
-        }
+  .breakdown { margin-top: 1.75rem; }
+  .breakdown-label { font-size: .75rem; color: var(--muted); margin-bottom: .9rem; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .bar-name { font-size: .8rem; color: var(--muted); width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+  .bar-track { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width .4s cubic-bezier(.4,0,.2,1); margin-right: auto; }
+  .bar-amt { font-size: .8rem; font-weight: 600; min-width: 70px; text-align: left; direction: ltr; color: var(--text); }
 
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 1.75rem;
-        }
+  .toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(60px);
+    background: var(--accent); color: #0e0f11; padding: 9px 20px;
+    border-radius: 30px; font-size: .85rem; font-weight: 600;
+    opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .stat {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1rem 1.1rem;
-        }
-
-        .stat-label {
-            font-size: .72rem;
-            color: var(--muted);
-            margin-bottom: .4rem;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text);
-            direction: ltr;
-            text-align: right;
-        }
-
-        .stat-value.accent {
-            color: var(--accent);
-        }
-
-        .form-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.4rem;
-            margin-bottom: 1.75rem;
-        }
-
-        .form-label {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-bottom: .9rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 9px 11px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text);
-            font-family: var(--font);
-            font-size: .9rem;
-            transition: border-color .15s;
-            appearance: none;
-            text-align: right;
-        }
-
-        input::placeholder {
-            color: var(--muted);
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        input[type=number] {
-            direction: ltr;
-            text-align: left;
-        }
-
-        select option {
-            background: var(--surface2);
-        }
-
-        .add-btn {
-            width: 100%;
-            padding: 10px;
-            background: var(--accent);
-            color: #0e0f11;
-            border: none;
-            border-radius: var(--radius);
-            font-family: var(--font);
-            font-size: .95rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 4px;
-            transition: opacity .15s, transform .1s;
-        }
-
-        .add-btn:hover {
-            opacity: .88;
-        }
-
-        .add-btn:active {
-            transform: scale(.99);
-        }
-
-        .list-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: .85rem;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .list-top h2 {
-            font-size: .95rem;
-            font-weight: 600;
-        }
-
-        .list-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        select.sm {
-            width: auto;
-            padding: 6px 9px;
-            font-size: .8rem;
-        }
-
-        .export-btn {
-            padding: 7px 13px;
-            background: transparent;
-            border: 1px solid var(--border2);
-            border-radius: var(--radius);
-            color: var(--muted);
-            font-size: .8rem;
-            cursor: pointer;
-            font-family: var(--font);
-            transition: border-color .15s, color .15s;
-            white-space: nowrap;
-        }
-
-        .export-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .expense-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .expense-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: .8rem 1rem;
-            transition: border-color .15s;
-        }
-
-        .expense-row:hover {
-            border-color: var(--border2);
-        }
-
-        .dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .exp-desc {
-            flex: 1;
-            font-size: .9rem;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .exp-cat {
-            font-size: .72rem;
-            padding: 3px 9px;
-            border-radius: 20px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .exp-date {
-            font-size: .72rem;
-            color: var(--muted);
-            white-space: nowrap;
-            direction: ltr;
-            flex-shrink: 0;
-        }
-
-        .exp-amount {
-            font-size: .95rem;
-            font-weight: 600;
-            white-space: nowrap;
-            direction: ltr;
-            flex-shrink: 0;
-        }
-
-        .del {
-            background: none;
-            border: none;
-            color: var(--dim);
-            font-size: 1.1rem;
-            cursor: pointer;
-            line-height: 1;
-            transition: color .15s;
-            flex-shrink: 0;
-        }
-
-        .del:hover {
-            color: #e05252;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 2.5rem;
-            color: var(--muted);
-            font-size: .9rem;
-            border: 1px dashed var(--border);
-            border-radius: var(--radius-lg);
-        }
-
-        .breakdown {
-            margin-top: 1.75rem;
-        }
-
-        .breakdown-label {
-            font-size: .75rem;
-            color: var(--muted);
-            margin-bottom: .9rem;
-        }
-
-        .bar-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 9px;
-        }
-
-        .bar-name {
-            font-size: .8rem;
-            color: var(--muted);
-            width: 130px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: right;
-        }
-
-        .bar-track {
-            flex: 1;
-            height: 4px;
-            background: var(--surface2);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width .4s cubic-bezier(.4, 0, .2, 1);
-            margin-right: auto;
-        }
-
-        .bar-amt {
-            font-size: .8rem;
-            font-weight: 600;
-            min-width: 70px;
-            text-align: left;
-            direction: ltr;
-            color: var(--text);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%) translateY(60px);
-            background: var(--accent);
-            color: #0e0f11;
-            padding: 9px 20px;
-            border-radius: 30px;
-            font-size: .85rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity .3s, transform .3s;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        @media (max-width: 580px) {
-            .summary {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .exp-cat,
-            .exp-date {
-                display: none;
-            }
-        }
-    </style>
+  @media (max-width: 580px) {
+    .summary { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .exp-cat, .exp-date { display: none; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="shell">
+<div class="shell">
 
-        <header>
-            <h1>سجل <span>المصاريف</span></h1>
-            <div class="clock" id="clock"></div>
-        </header>
+  <header>
+    <h1>سجل <span>المصاريف</span></h1>
+    <div class="clock" id="clock"></div>
+  </header>
 
-        <div class="summary" id="summary"></div>
+  <div class="summary" id="summary"></div>
 
-        <div class="form-card">
-            <div class="form-label">إضافة مصروف جديد — سيتم تسجيل الوقت تلقائياً</div>
-            <div class="form-grid">
-                <input type="text" id="desc" placeholder="الوصف" autocomplete="off" />
-                <input type="number" id="amount" placeholder="المبلغ" min="0" step="0.01" />
-            </div>
-            <div class="form-grid">
-                <select id="category">
-                    <option value="">اختر التصنيف</option>
-                    <optgroup label="☕ مشروبات">
-                        <option value="قهوة">قهوة</option>
-                        <option value="مشروبات أخرى">مشروبات أخرى</option>
-                    </optgroup>
-                    <optgroup label="🍽️ طعام">
-                        <option value="مطاعم">مطاعم</option>
-                        <option value="بقالة">بقالة</option>
-                        <option value="وجبات سريعة">وجبات سريعة</option>
-                        <option value="حلويات">حلويات</option>
-                    </optgroup>
-                    <optgroup label="🌙 ترفيه">
-                        <option value="سهرات">سهرات</option>
-                        <option value="سينما وترفيه">سينما وترفيه</option>
-                        <option value="اشتراكات">اشتراكات</option>
-                    </optgroup>
-                    <optgroup label="🚗 تنقل">
-                        <option value="وقود">وقود</option>
-                        <option value="تاكسي وكريم">تاكسي وكريم</option>
-                        <option value="صيانة سيارة">صيانة سيارة</option>
-                    </optgroup>
-                    <optgroup label="🛍️ تسوق">
-                        <option value="ملابس">ملابس</option>
-                        <option value="إلكترونيات">إلكترونيات</option>
-                        <option value="منزل وديكور">منزل وديكور</option>
-                        <option value="تسوق عام">تسوق عام</option>
-                    </optgroup>
-                    <optgroup label="🏠 منزل">
-                        <option value="إيجار">إيجار</option>
-                        <option value="فواتير">فواتير</option>
-                        <option value="صيانة منزل">صيانة منزل</option>
-                    </optgroup>
-                    <optgroup label="💊 صحة">
-                        <option value="صيدلية">صيدلية</option>
-                        <option value="طبيب">طبيب</option>
-                        <option value="رياضة">رياضة</option>
-                    </optgroup>
-                    <optgroup label="🎓 تعليم">
-                        <option value="كتب ودورات">كتب ودورات</option>
-                        <option value="مدرسة وجامعة">مدرسة وجامعة</option>
-                    </optgroup>
-                    <optgroup label="✈️ سفر">
-                        <option value="تذاكر طيران">تذاكر طيران</option>
-                        <option value="فنادق">فنادق</option>
-                        <option value="سياحة">سياحة</option>
-                    </optgroup>
-                    <optgroup label="🚬 أخرى">
-                        <option value="سجائر">سجائر</option>
-                        <option value="هدايا">هدايا</option>
-                        <option value="تبرعات">تبرعات</option>
-                        <option value="متنوع">متنوع</option>
-                    </optgroup>
-                </select>
-                <input type="text" id="notes" placeholder="ملاحظات (اختياري)" autocomplete="off" />
-            </div>
-            <button class="add-btn" onclick="addExpense()">+ إضافة مصروف</button>
-        </div>
-
-        <div class="list-top">
-            <h2 id="list-title">جميع المصاريف</h2>
-            <div class="list-controls">
-                <select class="sm" id="filter-cat" onchange="render()">
-                    <option value="">كل التصنيفات</option>
-
-                    <optgroup label="تصنيفات شخصية">
-                        <option value="قهوة يومية">قهوة يومية</option>
-                        <option value="سجائر">سجائر</option>
-                    </optgroup>
-                    <optgroup label="غذاء ومشروبات">
-                        <option value="غدائية سوبرماركت">غدائية سوبرماركت</option>
-                        <option value="غدائية محل">غدائية محل</option>
-                        <option value="خضروات">خضروات</option>
-                        <option value="لحوم">لحوم</option> 
-                        <option value="مطاعم">مطاعم</option>
-                        <option value="وجبات سريعة">وجبات سريعة</option>
-                        <option value="حلويات">حلويات</option>
-                        <option value="مشروبات أخرى">مشروبات أخرى</option>
-                    </optgroup>
-
-                    <optgroup label="سيارة ومواصلات">
-                        <option value="مصاريف وقود">مصاريف وقود</option>
-                        <option value="تصليح سيارة">تصليح سيارة</option>
-                    </optgroup>
-
-                    <optgroup label="عائلة واجتماعي">
-                        <option value="مصاريف اجتماعية عائلية">مصاريف اجتماعية عائلية</option>
-                        <option value="مصاريف اجتماعية شخصية">مصاريف اجتماعية شخصية</option>
-                        <option value="هدايا">هدايا</option>
-                        <option value="تبرعات">تبرعات</option>
-                    </optgroup>
-
-                    <optgroup label="مصاريف شخصية">
-                        <option value="مصاريف شخصية">مصاريف شخصية</option>
-                        <option value="مصاريف ترفيهية شخصية">مصاريف ترفيهية شخصية</option>
-                        <option value="ملابس">ملابس</option>
-                        
-                    </optgroup>
-
-                    <optgroup label="صحة">
-                        <option value="مصاريف علاج">مصاريف علاج</option>
-                        <option value="مصاريف ادوية">مصاريف ادوية</option>
-                    </optgroup>
-
-                    <optgroup label="منزل">
-                        <option value="إيجار">إيجار</option>
-                        <option value="فواتير">فواتير</option>
-                        <option value="صيانة منزل">صيانة منزل</option>
-                    </optgroup>
-
-                    <optgroup label="ترفيه وسفر">
-                        <option value="سياحة">سياحة</option>
-                        <option value="فنادق">فنادق</option>
-                        <option value="تذاكر طيران">تذاكر طيران</option>
-                    </optgroup>
-
-                    <optgroup label="أخرى">
-                        <option value="اشتراكات">اشتراكات</option>
-                        <option value="متنوع">متنوع</option>
-                    </optgroup>
-                </select>
-                <button class="export-btn" onclick="exportCSV()">تصدير CSV ↓</button>
-            </div>
-        </div>
-
-        <div class="expense-list" id="expense-list"></div>
-        <div class="breakdown" id="breakdown"></div>
-
+  <div class="form-card">
+    <div class="form-label">إضافة مصروف جديد — سيتم تسجيل الوقت تلقائياً</div>
+    <div class="form-grid">
+      <input type="text" id="desc" placeholder="الوصف" autocomplete="off"/>
+      <input type="number" id="amount" placeholder="المبلغ" min="0" step="0.01"/>
     </div>
+    <div class="form-grid">
+      <select id="category">
+        <option value="">اختر التصنيف</option>
+        <optgroup label="تصنيفات شخصية">
+          <option value="قهوة يومية">قهوة يومية</option>
+          <option value="سجائر">سجائر</option>
+        </optgroup>
+        <optgroup label="غذاء ومشروبات">
+          <option value="غدائية سوبرماركت">غدائية سوبرماركت</option>
+          <option value="غدائية محل">غدائية محل</option>
+          <option value="خضروات">خضروات</option>
+          <option value="لحوم">لحوم</option>
+          <option value="مطاعم">مطاعم</option>
+          <option value="وجبات سريعة">وجبات سريعة</option>
+          <option value="حلويات">حلويات</option>
+          <option value="مشروبات أخرى">مشروبات أخرى</option>
+        </optgroup>
+        <optgroup label="سيارة ومواصلات">
+          <option value="مصاريف وقود">مصاريف وقود</option>
+          <option value="تصليح سيارة">تصليح سيارة</option>
+        </optgroup>
+        <optgroup label="عائلة واجتماعي">
+          <option value="مصاريف اجتماعية عائلية">مصاريف اجتماعية عائلية</option>
+          <option value="مصاريف اجتماعية شخصية">مصاريف اجتماعية شخصية</option>
+          <option value="هدايا">هدايا</option>
+          <option value="تبرعات">تبرعات</option>
+        </optgroup>
+        <optgroup label="مصاريف شخصية">
+          <option value="مصاريف شخصية">مصاريف شخصية</option>
+          <option value="مصاريف ترفيهية شخصية">مصاريف ترفيهية شخصية</option>
+          <option value="ملابس">ملابس</option>
+        </optgroup>
+        <optgroup label="صحة">
+          <option value="مصاريف علاج">مصاريف علاج</option>
+          <option value="مصاريف ادوية">مصاريف ادوية</option>
+        </optgroup>
+        <optgroup label="منزل">
+          <option value="إيجار">إيجار</option>
+          <option value="فواتير">فواتير</option>
+          <option value="صيانة منزل">صيانة منزل</option>
+        </optgroup>
+        <optgroup label="ترفيه وسفر">
+          <option value="سياحة">سياحة</option>
+          <option value="فنادق">فنادق</option>
+          <option value="تذاكر طيران">تذاكر طيران</option>
+        </optgroup>
+        <optgroup label="أخرى">
+          <option value="اشتراكات">اشتراكات</option>
+          <option value="متنوع">متنوع</option>
+        </optgroup>
+      </select>
+      <input type="text" id="notes" placeholder="ملاحظات (اختياري)" autocomplete="off"/>
+    </div>
+    <button class="add-btn" onclick="addExpense()">+ إضافة مصروف</button>
+  </div>
 
-    <div class="toast" id="toast"></div>
+  <div class="list-top">
+    <h2 id="list-title">جميع المصاريف</h2>
+    <div class="list-controls">
+      <select class="sm" id="filter-cat" onchange="render()">
+        <option value="">كل التصنيفات</option>
+        <optgroup label="تصنيفات شخصية">
+          <option value="قهوة يومية">قهوة يومية</option>
+          <option value="سجائر">سجائر</option>
+        </optgroup>
+        <optgroup label="غذاء ومشروبات">
+          <option value="غدائية سوبرماركت">غدائية سوبرماركت</option>
+          <option value="غدائية محل">غدائية محل</option>
+          <option value="خضروات">خضروات</option>
+          <option value="لحوم">لحوم</option>
+          <option value="مطاعم">مطاعم</option>
+          <option value="وجبات سريعة">وجبات سريعة</option>
+          <option value="حلويات">حلويات</option>
+          <option value="مشروبات أخرى">مشروبات أخرى</option>
+        </optgroup>
+        <optgroup label="سيارة ومواصلات">
+          <option value="مصاريف وقود">مصاريف وقود</option>
+          <option value="تصليح سيارة">تصليح سيارة</option>
+        </optgroup>
+        <optgroup label="عائلة واجتماعي">
+          <option value="مصاريف اجتماعية عائلية">مصاريف اجتماعية عائلية</option>
+          <option value="مصاريف اجتماعية شخصية">مصاريف اجتماعية شخصية</option>
+          <option value="هدايا">هدايا</option>
+          <option value="تبرعات">تبرعات</option>
+        </optgroup>
+        <optgroup label="مصاريف شخصية">
+          <option value="مصاريف شخصية">مصاريف شخصية</option>
+          <option value="مصاريف ترفيهية شخصية">مصاريف ترفيهية شخصية</option>
+          <option value="ملابس">ملابس</option>
+        </optgroup>
+        <optgroup label="صحة">
+          <option value="مصاريف علاج">مصاريف علاج</option>
+          <option value="مصاريف ادوية">مصاريف ادوية</option>
+        </optgroup>
+        <optgroup label="منزل">
+          <option value="إيجار">إيجار</option>
+          <option value="فواتير">فواتير</option>
+          <option value="صيانة منزل">صيانة منزل</option>
+        </optgroup>
+        <optgroup label="ترفيه وسفر">
+          <option value="سياحة">سياحة</option>
+          <option value="فنادق">فنادق</option>
+          <option value="تذاكر طيران">تذاكر طيران</option>
+        </optgroup>
+        <optgroup label="أخرى">
+          <option value="اشتراكات">اشتراكات</option>
+          <option value="متنوع">متنوع</option>
+        </optgroup>
+      </select>
+      <button class="export-btn" onclick="exportCSV()">تصدير CSV ↓</button>
+    </div>
+  </div>
 
-    <script>
-        const CAT_COLORS = {
-            'قهوة': '#a07850',
-            'مشروبات أخرى': '#7ab8d4',
-            'مطاعم': '#e05252',
-            'بقالة': '#3dbf8a',
-            'وجبات سريعة': '#e07a30',
-            'حلويات': '#d46fa0',
-            'سهرات': '#9b8ee8',
-            'سينما وترفيه': '#7f6ecc',
-            'اشتراكات': '#5a8fd4',
-            'وقود': '#d4a22a',
-            'تاكسي وكريم': '#4a9edd',
-            'صيانة سيارة': '#7a9eb8',
-            'ملابس': '#cc6b8e',
-            'إلكترونيات': '#5ab8cc',
-            'منزل وديكور': '#8bc47a',
-            'تسوق عام': '#d47a5a',
-            'إيجار': '#e05252',
-            'فواتير': '#b8a04a',
-            'صيانة منزل': '#8a7a6a',
-            'صيدلية': '#4abf8a',
-            'طبيب': '#3a9e7a',
-            'رياضة': '#7ab830',
-            'كتب ودورات': '#4a7ab8',
-            'مدرسة وجامعة': '#3a6aaa',
-            'تذاكر طيران': '#5a8acc',
-            'فنادق': '#7a6eaa',
-            'سياحة': '#4ab8aa',
-            'سجائر': '#888',
-            'هدايا': '#d45a9e',
-            'تبرعات': '#4abf6a',
-            'متنوع': '#6b7080'
-        };
+  <div class="expense-list" id="expense-list"></div>
+  <div class="breakdown" id="breakdown"></div>
 
-        const STORAGE_KEY = 'exptrack_ar_v1';
-        let expenses = [];
-        try { expenses = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { expenses = []; }
-        function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); } catch (e) { } }
+</div>
 
-        function nowISO() { return new Date().toISOString(); }
+<div class="toast" id="toast"></div>
 
-        function fmtDatetime(iso) {
-            const d = new Date(iso);
-            return d.toLocaleString('ar-LY', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        }
+<script>
+const CAT_COLORS = {
+  'قهوة يومية':                '#a07850',
+  'سجائر':                     '#888080',
+  'غدائية سوبرماركت':          '#3dbf8a',
+  'غدائية محل':                '#2eaa78',
+  'خضروات':                    '#7ab830',
+  'لحوم':                      '#c45a3a',
+  'مطاعم':                     '#e05252',
+  'وجبات سريعة':               '#e07a30',
+  'حلويات':                    '#d46fa0',
+  'مشروبات أخرى':              '#7ab8d4',
+  'مصاريف وقود':               '#d4a22a',
+  'تصليح سيارة':               '#7a9eb8',
+  'مصاريف اجتماعية عائلية':    '#9b8ee8',
+  'مصاريف اجتماعية شخصية':     '#7f6ecc',
+  'هدايا':                     '#d45a9e',
+  'تبرعات':                    '#4abf6a',
+  'مصاريف شخصية':              '#5a8fd4',
+  'مصاريف ترفيهية شخصية':      '#4a9edd',
+  'ملابس':                     '#cc6b8e',
+  'مصاريف علاج':               '#3a9e7a',
+  'مصاريف ادوية':              '#4abf8a',
+  'إيجار':                     '#e05870',
+  'فواتير':                    '#b8a04a',
+  'صيانة منزل':                '#8a7a6a',
+  'سياحة':                     '#4ab8aa',
+  'فنادق':                     '#7a6eaa',
+  'تذاكر طيران':               '#5a8acc',
+  'اشتراكات':                  '#5a7fd4',
+  'متنوع':                     '#6b7080'
+};
 
-        function fmtMoney(n) {
-            return n.toLocaleString('ar-LY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' د.ل';
-        }
+const STORAGE_KEY = 'exptrack_ar_v1';
+let expenses = [];
+try { expenses = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { expenses = []; }
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); } catch(e) {} }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2200);
-        }
+function nowISO() { return new Date().toISOString(); }
 
-        function tickClock() {
-            const el = document.getElementById('clock');
-            if (el) el.textContent = new Date().toLocaleString('ar-LY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-        tickClock();
-        setInterval(tickClock, 1000);
+function fmtDatetime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('ar-LY', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
-        function addExpense() {
-            const desc = document.getElementById('desc').value.trim();
-            const amount = parseFloat(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-            const notes = document.getElementById('notes').value.trim();
+function fmtMoney(n) {
+  return n.toLocaleString('ar-LY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' د.ل';
+}
 
-            if (!desc || isNaN(amount) || amount <= 0 || !category) {
-                showToast('⚠️ يرجى تعبئة الوصف والمبلغ والتصنيف');
-                return;
-            }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
 
-            expenses.unshift({ id: Date.now(), desc, amount, datetime: nowISO(), category, notes });
-            save();
-            document.getElementById('desc').value = '';
-            document.getElementById('amount').value = '';
-            document.getElementById('notes').value = '';
-            document.getElementById('category').value = '';
-            showToast('✓ تم تسجيل المصروف');
-            render();
-        }
+function tickClock() {
+  const el = document.getElementById('clock');
+  if (el) el.textContent = new Date().toLocaleString('ar-LY', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+tickClock();
+setInterval(tickClock, 1000);
 
-        function deleteExpense(id) {
-            if (!confirm('هل تريد حذف هذا المصروف؟')) return;
-            expenses = expenses.filter(e => e.id !== id);
-            save();
-            render();
-        }
+function addExpense() {
+  const desc     = document.getElementById('desc').value.trim();
+  const amount   = parseFloat(document.getElementById('amount').value);
+  const category = document.getElementById('category').value;
+  const notes    = document.getElementById('notes').value.trim();
 
-        function render() {
-            const fc = document.getElementById('filter-cat').value;
-            const filtered = fc ? expenses.filter(e => e.category === fc) : expenses;
-            const total = filtered.reduce((s, e) => s + e.amount, 0);
-            const avg = filtered.length ? total / filtered.length : 0;
+  if (!desc || isNaN(amount) || amount <= 0 || !category) {
+    showToast('⚠️ يرجى تعبئة الوصف والمبلغ والتصنيف');
+    return;
+  }
 
-            document.getElementById('summary').innerHTML = `
+  expenses.unshift({ id: Date.now(), desc, amount, datetime: nowISO(), category, notes });
+  save();
+  document.getElementById('desc').value     = '';
+  document.getElementById('amount').value   = '';
+  document.getElementById('notes').value    = '';
+  document.getElementById('category').value = '';
+  showToast('✓ تم تسجيل المصروف');
+  render();
+}
+
+function deleteExpense(id) {
+  if (!confirm('هل تريد حذف هذا المصروف؟')) return;
+  expenses = expenses.filter(e => e.id !== id);
+  save();
+  render();
+}
+
+function render() {
+  const fc       = document.getElementById('filter-cat').value;
+  const filtered = fc ? expenses.filter(e => e.category === fc) : expenses;
+  const total    = filtered.reduce((s, e) => s + e.amount, 0);
+  const avg      = filtered.length ? total / filtered.length : 0;
+
+  document.getElementById('summary').innerHTML = `
     <div class="stat">
       <div class="stat-label">إجمالي المصاريف</div>
       <div class="stat-value accent">${fmtMoney(total)}</div>
@@ -663,16 +367,16 @@
     </div>
   `;
 
-            document.getElementById('list-title').textContent =
-                fc ? `${fc} (${filtered.length})` : `جميع المصاريف (${filtered.length})`;
+  document.getElementById('list-title').textContent =
+    fc ? `${fc} (${filtered.length})` : `جميع المصاريف (${filtered.length})`;
 
-            const list = document.getElementById('expense-list');
-            if (!filtered.length) {
-                list.innerHTML = '<div class="empty">لا توجد مصاريف بعد — أضيفي أول مصروف من الأعلى 👆</div>';
-            } else {
-                list.innerHTML = filtered.map(e => {
-                    const col = CAT_COLORS[e.category] || '#6b7080';
-                    return `
+  const list = document.getElementById('expense-list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">لا توجد مصاريف بعد — أضيفي أول مصروف من الأعلى 👆</div>';
+  } else {
+    list.innerHTML = filtered.map(e => {
+      const col = CAT_COLORS[e.category] || '#6b7080';
+      return `
         <div class="expense-row">
           <button class="del" onclick="deleteExpense(${e.id})" title="حذف">×</button>
           <span class="exp-amount">${fmtMoney(e.amount)}</span>
@@ -681,54 +385,53 @@
           <div class="exp-desc" title="${e.desc}">${e.desc}${e.notes ? ' — ' + e.notes : ''}</div>
           <div class="dot" style="background:${col}"></div>
         </div>`;
-                }).join('');
-            }
+    }).join('');
+  }
 
-            const catTotals = {};
-            filtered.forEach(e => { catTotals[e.category] = (catTotals[e.category] || 0) + e.amount; });
-            const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-            const bd = document.getElementById('breakdown');
-            if (sorted.length < 2) { bd.innerHTML = ''; return; }
-            const maxVal = sorted[0][1];
-            bd.innerHTML = '<div class="breakdown-label">المصاريف حسب التصنيف</div>' +
-                sorted.map(([cat, val]) => {
-                    const col = CAT_COLORS[cat] || '#6b7080';
-                    const pct = Math.round(val / maxVal * 100);
-                    return `
+  const catTotals = {};
+  filtered.forEach(e => { catTotals[e.category] = (catTotals[e.category] || 0) + e.amount; });
+  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+  const bd = document.getElementById('breakdown');
+  if (sorted.length < 2) { bd.innerHTML = ''; return; }
+  const maxVal = sorted[0][1];
+  bd.innerHTML = '<div class="breakdown-label">المصاريف حسب التصنيف</div>' +
+    sorted.map(([cat, val]) => {
+      const col = CAT_COLORS[cat] || '#6b7080';
+      const pct = Math.round(val / maxVal * 100);
+      return `
         <div class="bar-row">
           <div class="bar-name">${cat}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
           <div class="bar-amt">${fmtMoney(val)}</div>
         </div>`;
-                }).join('');
-        }
+    }).join('');
+}
 
-        function exportCSV() {
-            const fc = document.getElementById('filter-cat').value;
-            const filtered = fc ? expenses.filter(e => e.category === fc) : expenses;
-            if (!filtered.length) { showToast('لا توجد بيانات للتصدير'); return; }
-            const esc = s => '"' + String(s).replace(/"/g, '""') + '"';
-            const header = 'التاريخ والوقت,الوصف,التصنيف,المبلغ,ملاحظات';
-            const rows = filtered.map(e =>
-                `${e.datetime},${esc(e.desc)},${esc(e.category)},${e.amount.toFixed(2)},${esc(e.notes || '')}`
-            );
-            const bom = '\uFEFF';
-            const csv = bom + [header, ...rows].join('\r\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `مصاريف${fc ? '-' + fc : ''}.csv`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+function exportCSV() {
+  const fc       = document.getElementById('filter-cat').value;
+  const filtered = fc ? expenses.filter(e => e.category === fc) : expenses;
+  if (!filtered.length) { showToast('لا توجد بيانات للتصدير'); return; }
+  const esc    = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const header = 'التاريخ والوقت,الوصف,التصنيف,المبلغ,ملاحظات';
+  const rows   = filtered.map(e =>
+    `${e.datetime},${esc(e.desc)},${esc(e.category)},${e.amount.toFixed(2)},${esc(e.notes || '')}`
+  );
+  const bom  = '\uFEFF';
+  const csv  = bom + [header, ...rows].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `مصاريف${fc ? '-' + fc : ''}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && ['desc', 'amount', 'category', 'notes'].includes(e.target.id)) addExpense();
-        });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && ['desc','amount','category','notes'].includes(e.target.id)) addExpense();
+});
 
-        render();
-    </script>
+render();
+</script>
 </body>
-
 </html>
